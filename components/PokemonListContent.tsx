@@ -33,7 +33,6 @@ const PokemonListContent: React.FC = () => {
   if (loading) {
     return (
       <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ color: '#333' }}>Pokemon Searcher</h1> 
         <SearchInput />
         <p style={{ fontSize: '1.1em', color: '#0070f3' }}>กำลังโหลดรายการโปเกมอนทั้งหมด...</p>
       </div>
@@ -43,7 +42,6 @@ const PokemonListContent: React.FC = () => {
   if (error) {
     return (
       <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ color: '#333' }}>Pokemon Searcher</h1> 
         <SearchInput />
         <p style={{ fontSize: '1.1em', color: '#e74c3c' }}>เกิดข้อผิดพลาดในการดึงรายการโปเกมอน: {error.message}</p>
       </div>
