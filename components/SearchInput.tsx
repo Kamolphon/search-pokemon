@@ -1,61 +1,54 @@
 // components/SearchInput.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SearchInput: React.FC = () => {
   const router = useRouter();
-  const searchParams = useSearchParams(); // ใช้ useSearchParams เพื่ออ่าน query params
-  // ตรวจสอบว่า searchParams ไม่เป็น null ก่อนเรียกใช้ .get()
-  const [searchValue, setSearchValue] = useState<string>(searchParams ? searchParams.get('name') || '' : ''); // อ่าน 'name' param
+  const searchParams = useSearchParams();
+  const initialValue = searchParams?.get('name') || '';
+  const [searchValue, setSearchValue] = useState<string>(initialValue);
 
-  // ซิงค์ค่า input กับ URL query param เมื่อ component mount หรือ searchParams เปลี่ยนแปลง
+  // Sync ค่า search จาก URL เมื่อ mount หรือ URL เปลี่ยน
   useEffect(() => {
-    setSearchValue(searchParams ? searchParams.get('name') || '' : '');
+    setSearchValue(searchParams?.get('name') || '');
   }, [searchParams]);
 
-  const handleSearch = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedSearchValue = searchValue.trim();
+  // ทำ real-time search ด้วย debounce
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      const trimmed = searchValue.trim();
+      const newParams = new URLSearchParams(searchParams?.toString() || '');
 
-    // ตรวจสอบว่า searchParams ไม่เป็น null ก่อนเรียกใช้ .toString()
-    const newParams = new URLSearchParams(searchParams ? searchParams.toString() : '');
+      if (trimmed) {
+        newParams.set('name', trimmed);
+      } else {
+        newParams.delete('name');
+      }
 
-    if (trimmedSearchValue) {
-      newParams.set('name', trimmedSearchValue);
-      router.push(`/?${newParams.toString()}`); // อัปเดต URL ด้วย query param ใหม่
-    } else {
-      // ลบ query param ถ้าค่าว่าง
-      newParams.delete('name');
       router.push(`/?${newParams.toString()}`);
-    }
-  }, [router, searchValue, searchParams]); // searchParams ถูกใช้ใน useCallback dependency array
+    }, 500); // debounce 500ms
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchValue, router, searchParams]);
 
   return (
-    <form onSubmit={handleSearch} style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+    <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
       <input
         type="text"
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
         placeholder="ค้นหาโปเกมอนด้วยชื่อ..."
-        style={{ padding: '10px', width: '300px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
-      />
-      <button
-        type="submit"
         style={{
-          padding: '10px 20px',
+          padding: '10px',
+          width: '300px',
           fontSize: '16px',
           borderRadius: '5px',
-          border: 'none',
-          backgroundColor: '#0070f3',
-          color: 'white',
-          cursor: 'pointer',
+          border: '1px solid #ccc',
         }}
-      >
-        ค้นหา
-      </button>
-    </form>
+      />
+    </div>
   );
 };
 
